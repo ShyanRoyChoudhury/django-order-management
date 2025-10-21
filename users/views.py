@@ -19,12 +19,13 @@ def register_user(request):
         return Response({'id': user.uid, 'message': "User registered"}, status=201)
 
     except serializers.ValidationError as e:
-        logger.error("Validation error during user registration: %s", str(e))
-        return Response({'error': str(e)}, status=403)
+        errors = {field: [str(detail) for detail in details] for field, details in e.detail.items()}
+        return Response({'errors': errors}, status=409)
 
     except Exception as e:
-        logger.error("Error registering user: %s", str(e))
-        return Response({'error': str(e)}, status=400)
+        logger.error("Unexpected error during user registration: %s", str(e))
+        errors = {'non_field_errors': [str(e)]}
+        return Response({'errors': errors, 'message': 'Something went wrong'}, status=500)
     
 
 @api_view(['POST'])
@@ -34,6 +35,11 @@ def login_user(request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data, status=200)
+    
+    except serializers.ValidationError as e:
+        errors = {field: [str(detail) for detail in details] for field, details in e.detail.items()}
+        return Response({'errors': errors}, status=409)
     except Exception as e:
-        logger.error("Error logging in user: %s", str(e))
-        return Response({'error': str(e)}, status=400)
+        logger.error("Unexpected error during user login: %s", str(e))
+        errors = {'non_field_errors': [str(e)]}
+        return Response({'errors': errors, 'message': 'Something went wrong'}, status=500)
