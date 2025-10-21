@@ -32,28 +32,9 @@ A small-scale, production-grade backend showcasing modern practices: JWT auth, o
 Prerequisites: Docker and Docker Compose installed.
 
 1) Copy environment template
-- Create a .env file in project root. Use the following as a starting point:
 
 ```
-# Database (matches docker-compose services)
-DB_NAME=order_management_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=postgres
-DB_PORT=5432
-
-# Redis
-REDIS_URL=redis://redis:6379/0
-
-# JWT
-ACCESS_TOKEN_EXPIRATION=15
-
-# Rate limiting (defaults shown)
-RATE_LIMIT_MAX_REQUEST=100
-RATE_LIMIT_WINDOW_SECONDS=600
-
-# Celery Beat schedule (seconds)
-CELERY_BEAT_SCHEDULER_SECONDS=120
+cp .env.example .env
 ```
 
 2) Start all services
