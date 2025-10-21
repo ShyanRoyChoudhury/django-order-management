@@ -1,18 +1,16 @@
-# users/middleware.py
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.utils.deprecation import MiddlewareMixin
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import UntypedToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.authentication import JWTAuthentication
 import os
 import redis
-from django.http import JsonResponse
 from django.conf import settings
-from django.utils.deprecation import MiddlewareMixin
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 
 # Configure Redis connection
 redis_client = redis.Redis.from_url(getattr(settings, 'REDIS_URL', 'redis://localhost:6379/0'))
+
 
 
 User = get_user_model()
@@ -23,6 +21,10 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
+        allowed_pass = ['/users/login', '/users/register', '/users/token/refresh']
+        if request.path in allowed_pass:
+            return  # Skip authentication for these paths
+        
         auth_header = request.META.get("HTTP_AUTHORIZATION", "")
         if not auth_header.startswith("Bearer "):
             request.user = None
