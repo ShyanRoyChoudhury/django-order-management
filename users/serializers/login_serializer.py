@@ -17,7 +17,7 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = CustomUser.objects.get(email=email)
         except CustomUser.DoesNotExist:
-            raise serializers.ValidationError("Invalid email or password")
+            raise serializers.ValidationError("User not found. Please Signup")
 
         # Verify password with bcrypt
         if not bcrypt.checkpw(password.encode(), user.password_hash.encode()):
