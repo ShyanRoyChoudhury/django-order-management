@@ -1,3 +1,4 @@
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from users.serializers.register_serializer import RegisterSerializer
@@ -41,5 +42,28 @@ def login_user(request):
         return Response({'errors': errors}, status=409)
     except Exception as e:
         logger.error("Unexpected error during user login: %s", str(e))
+        errors = {'non_field_errors': [str(e)]}
+        return Response({'errors': errors, 'message': 'Something went wrong'}, status=500)
+    
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refresh_token(request):
+    try:
+        
+        token = request.data.get("refresh")
+
+        if not token:
+            return Response({"error": "Refresh token is required"}, status=400)
+
+        refresh = RefreshToken(token)
+        new_access = str(refresh.access_token)
+        return Response({"access": new_access, "message": "Access token refreshed successfully"})
+    
+    except TokenError:
+        return Response({"error": "Invalid or expired refresh token"}, status=401)
+    
+    except Exception as e:
+        logger.error("Unexpected error during token refresh: %s", str(e))
         errors = {'non_field_errors': [str(e)]}
         return Response({'errors': errors, 'message': 'Something went wrong'}, status=500)
