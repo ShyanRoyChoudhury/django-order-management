@@ -163,6 +163,6 @@ Import it and set the base URL variable (http://localhost:8000). Use the login c
 
 ## Running Tests
 ```
-python manage.py test
+python manage.py test --settings=test_settings
 ```
 (Or inside the container: `docker compose exec backend python manage.py test`)
