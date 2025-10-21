@@ -53,11 +53,6 @@ This launches:
 docker compose exec backend python manage.py migrate
 ```
 
-4) (Optional) Create a superuser
-```
-docker compose exec backend python manage.py createsuperuser
-```
-
 5) Access the API
 - Base URL: http://localhost:8000/
 - See endpoints below and your Postman collection.
