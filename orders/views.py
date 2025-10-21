@@ -6,7 +6,6 @@ from rest_framework.pagination import PageNumberPagination
 from orders.serializers.create_order_serializer import CreateOrderSerializer
 from orders.serializers.list_order_serializer import OrderSerializer
 from orders.serializers.cancel_order_serializer import CancelOrderSerializer
-from orders.tasks import add
 import logging
 
 
@@ -28,7 +27,6 @@ def orders_handler(request):
             paginator.page_size = 10
             paginated_orders = paginator.paginate_queryset(orders, request)
             serializer = OrderSerializer(paginated_orders, many=True)
-            add.delay(10,20)
             return paginator.get_paginated_response(serializer.data)
 
     except serializers.ValidationError as e:
