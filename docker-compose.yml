@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: django-postgres
+    environment:
+      POSTGRES_DB: order_management_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - django-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d order_management_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: django-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - django-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - django-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-celery
+    command: celery -A config worker --loglevel=info
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - django-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-celery-beat
+    command: celery -A config beat --loglevel=info
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    networks:
+      - django-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+
+networks:
+  django-network:
+    driver: bridge
+    name: django-network
+
+volumes:
+  postgres_data:
+    name: django-postgres-data
+  redis_data:
+    name: django-redis-data
